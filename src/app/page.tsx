@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
 import {
   CaptureReceipt,
   RecommendResponse,
@@ -102,451 +103,495 @@ export default function RestockRescuePage() {
         components: "buttons",
       }}
     >
-      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
-        <header className="bg-slate-900 text-white border-b border-slate-800 py-4 px-6">
-          <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div className="min-h-screen bg-porcelain font-sans text-ink flex flex-col justify-between">
+        <header className="bg-evergreen text-porcelain">
+          <div className="mx-auto flex w-full max-w-[1280px] flex-wrap items-center justify-between gap-3 px-5 py-4 md:px-12">
             <div>
-              <h1 className="text-xl font-bold tracking-tight">
-                Restock Rescue | Northstar Jewelry Supply — Fall Restock | Sandbox Mode
-              </h1>
-              <p className="text-xs text-slate-300 mt-0.5">
-                Based on sales from Oct 27 – Nov 9 and current stock coverage.
+              <p className="text-[13px] font-bold tracking-[0.22em]">
+                RESTOCK RESCUE
+              </p>
+              <p className="mt-0.5 text-xs text-porcelain/70">
+                Northstar Jewelry Supply — Fall Restock | Sandbox Mode
               </p>
             </div>
-            <span className="text-xs font-mono uppercase bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2.5 py-1 rounded">
-              Data: Oct 27 – Nov 9 sales (Synthetic)
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="hidden text-[11px] text-porcelain/60 md:inline">
+                Based on sales from Oct 27 – Nov 9 and current stock coverage.
+              </span>
+              <span className="rounded-full border border-champagne/60 px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] text-champagne">
+                SYNTHETIC DATA
+              </span>
+              <span className="rounded-full border border-porcelain/40 px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] text-porcelain">
+                SANDBOX
+              </span>
+            </div>
           </div>
         </header>
 
-        <main className="max-w-5xl w-full mx-auto py-8 px-6 space-y-6 flex-1">
-          {/* SECTION 1: THE ASK */}
-          <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-              <h2 className="text-lg font-semibold">
-                1. Restock Budget & Buying Instruction
-              </h2>
-              <div className="flex flex-wrap gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const b = "250";
-                    const inst =
-                      "Prioritize earrings. I need to restock for this weekend.";
-                    setBudget(b);
-                    setInstruction(inst);
-                    requestRecommendation({
-                      budgetOverride: b,
-                      instructionOverride: inst,
-                    });
-                  }}
-                  className="px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium"
-                >
-                  Scenario A ($250 — Live AI)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const b = "150";
-                    const inst =
-                      "Prioritize earrings, but I need at least one necklace for the display table.";
-                    setBudget(b);
-                    setInstruction(inst);
-                    requestRecommendation({
-                      budgetOverride: b,
-                      instructionOverride: inst,
-                    });
-                  }}
-                  className="px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium"
-                >
-                  Scenario B ($150 — Live AI)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBudget("250");
-                    setInstruction(
-                      "Prioritize earrings. I need to restock for this weekend."
-                    );
-                    requestRecommendation({ preset: "preset-a" });
-                  }}
-                  className="px-2.5 py-1.5 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900"
-                >
-                  Sample Preset A (Non-AI)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBudget("150");
-                    setInstruction(
-                      "Prioritize earrings, but I need at least one necklace for the display table."
-                    );
-                    requestRecommendation({ preset: "preset-b" });
-                  }}
-                  className="px-2.5 py-1.5 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900"
-                >
-                  Sample Preset B (Non-AI)
-                </button>
-              </div>
-            </div>
+        <div className="mx-auto w-full max-w-[1280px] px-5 pt-8 md:px-12">
+          <h1 className="font-display text-4xl leading-tight text-evergreen md:text-5xl">
+            Restock with confidence.
+          </h1>
+          <p className="mt-2 text-sm text-secondary">
+            Build your next purchase with AI assistance.
+          </p>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
-                  Budget (USD)
-                </label>
-                <input
-                  type="number"
-                  min="20"
-                  max="10000"
-                  step="1"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base font-semibold"
-                />
-              </div>
-              <div className="md:col-span-3">
-                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
-                  Buyer Priority / Constraint
-                </label>
-                <input
-                  type="text"
-                  value={instruction}
-                  onChange={(e) => setInstruction(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base"
-                  placeholder="e.g., Prioritize earrings, need one necklace for display"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-xs text-slate-500">
-                1 pack = 6 units. Max 2 packs per SKU. Prices come exclusively from the server catalog.
-              </p>
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => requestRecommendation()}
-                className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-sm"
-              >
-                {loading ? "Validating Restock Plan..." : "Get My Restock Plan"}
-              </button>
-            </div>
-          </section>
-
+        <main className="mx-auto w-full max-w-[1280px] flex-1 space-y-5 px-5 py-6 md:px-12">
           {/* ERROR BANNER */}
           {errorMsg && (
-            <div className="bg-red-50 border border-red-300 text-red-900 rounded-xl p-4 flex items-center justify-between">
+            <div className="flex items-center justify-between rounded-2xl border border-error/30 bg-error-bg p-4 text-error">
               <div>
-                <p className="font-semibold text-sm">Action Required</p>
-                <p className="text-xs mt-0.5">{errorMsg}</p>
+                <p className="text-sm font-semibold">Action Required</p>
+                <p className="mt-0.5 text-xs">{errorMsg}</p>
               </div>
               <button
                 type="button"
                 onClick={() => requestRecommendation()}
-                className="px-3 py-1.5 rounded bg-red-700 text-white text-xs font-semibold"
+                className="h-10 rounded-xl bg-error px-4 text-xs font-semibold text-white transition hover:opacity-90"
               >
                 Try Again
               </button>
             </div>
           )}
 
-          {/* SECTION 2: THE BASKET */}
-          {basket && quote && (
-            <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-5">
-              {resetNotice && (
-                <div className="bg-indigo-50 border border-indigo-200 text-indigo-900 px-3.5 py-2 rounded-lg text-xs font-medium">
-                  New basket, new signature. Approval resets.
-                </div>
-              )}
+          {/* ONE CONTINUOUS WORKBENCH */}
+          <section className="overflow-hidden rounded-[20px] border border-line bg-white shadow-card">
+            <div className="grid lg:grid-cols-[34%_minmax(0,1fr)]">
+              {/* 01 · BUYING PLAN */}
+              <div className="space-y-5 p-6 lg:border-r lg:border-line">
+                <p className="text-[11px] font-semibold tracking-[0.16em] text-secondary">
+                  <span className="text-champagne">01</span>
+                  <span className="mx-2 text-line">·</span>YOUR BUYING PLAN
+                </p>
 
-              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-lg font-semibold">
-                    2. Server-Validated Restock Basket ({basket.totalUnits} units,{" "}
-                    {basket.selected.length} SKUs)
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    Wholesale price, tax &amp; shipping excluded for demo clarity.
+                  <label className="mb-1.5 block text-[11px] font-semibold tracking-[0.12em] text-secondary">
+                    PURCHASE BUDGET (USD)
+                  </label>
+                  <input
+                    type="number"
+                    min="20"
+                    max="10000"
+                    step="1"
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    className="h-[50px] w-full rounded-xl border border-line bg-white px-4 text-2xl font-bold tabular-nums text-evergreen outline-none transition focus:border-evergreen-soft"
+                  />
+                  <p className="mt-1.5 text-[11px] text-muted">
+                    Maximum spending limit.
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full border ${
-                      basket.source === "ai"
-                        ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                        : "bg-amber-50 text-amber-900 border-amber-300"
-                    }`}
-                  >
-                    {basket.sourceBadge}
-                  </span>
-                  {basket.repaired && basket.repairNote && (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-300">
-                      {basket.repairNote}
-                    </span>
-                  )}
-                </div>
-              </div>
 
-              {/* BUDGET BAR */}
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <div className="flex justify-between text-sm font-semibold mb-1.5">
-                  <span>
-                    {formatMoney(basket.totalCents)} /{" "}
-                    {formatMoney(basket.budgetCents)} — {basket.budgetUsedPct}%
-                    used, {formatMoney(basket.remainingCents)} left
-                  </span>
-                  <span className="text-xs text-slate-600">
-                    Earring pack share: {basket.earringPackSharePct}% (
-                    {basket.totalPacks} total packs)
-                  </span>
-                </div>
-                <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-indigo-600 transition-all"
-                    style={{
-                      width: `${Math.min(100, basket.budgetUsedPct)}%`,
-                    }}
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-semibold tracking-[0.12em] text-secondary">
+                    BUYER PRIORITY / CONSTRAINT
+                  </label>
+                  <textarea
+                    value={instruction}
+                    onChange={(e) => setInstruction(e.target.value)}
+                    rows={3}
+                    className="w-full resize-none rounded-xl border border-line bg-surface-muted/60 px-4 py-3 text-sm text-ink outline-none transition focus:border-evergreen-soft"
+                    placeholder="e.g., Prioritize earrings, need one necklace for display"
                   />
                 </div>
-              </div>
 
-              {/* SELECTED LINES TABLE */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-xs uppercase text-slate-500">
-                      <th className="py-2 pr-3">SKU / Product</th>
-                      <th className="py-2 px-3">Category</th>
-                      <th className="py-2 px-3">14d Velocity / Stock</th>
-                      <th className="py-2 px-3">Packs (Units)</th>
-                      <th className="py-2 px-3">Line Total</th>
-                      <th className="py-2 pl-3">Buying Rationale</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {basket.selected.map((line) => (
-                      <tr key={line.skuId}>
-                        <td className="py-3 pr-3 font-medium">
-                          <span className="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded mr-1.5">
-                            {line.skuId}
-                          </span>
-                          {line.name}
-                        </td>
-                        <td className="py-3 px-3 text-xs text-slate-600">
-                          {line.category}
-                        </td>
-                        <td className="py-3 px-3 text-xs">
-                          <span className="font-semibold">
-                            {line.soldLast14Days} sold
-                          </span>{" "}
-                          / {line.stockOnHand} in stock
-                        </td>
-                        <td className="py-3 px-3 font-medium">
-                          {line.packs} {line.packs === 1 ? "pack" : "packs"} (
-                          {line.units}u @ {formatMoney(line.unitPriceCents)})
-                        </td>
-                        <td className="py-3 px-3 font-bold">
-                          {formatMoney(line.lineTotalCents)}
-                        </td>
-                        <td className="py-3 pl-3 text-xs text-slate-700">
-                          {line.reason}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => requestRecommendation()}
+                  className="flex h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-evergreen text-sm font-semibold text-white transition duration-150 hover:bg-evergreen-soft disabled:opacity-50"
+                >
+                  <Sparkles size={18} strokeWidth={1.8} />
+                  {loading ? "Validating Restock Plan..." : "Generate restock basket"}
+                </button>
+                <p className="-mt-3 text-center text-[11px] text-muted">
+                  AI-assisted buying recommendations.
+                </p>
 
-              {/* SKIPPED SECTION (ALWAYS RENDERED, NOT COLLAPSIBLE) */}
-              {basket.skipped.length > 0 && (
-                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                  <h3 className="text-xs font-semibold uppercase text-slate-500 mb-2">
-                    Considered &amp; Skipped (Tradeoff Log)
-                  </h3>
-                  <ul className="space-y-1.5 text-xs text-slate-600">
-                    {basket.skipped.map((sk) => (
-                      <li key={sk.skuId}>
-                        <span className="font-mono font-semibold text-slate-800">
-                          {sk.skuId} {sk.name}
-                        </span>{" "}
-                        (1 pack = {formatMoney(sk.packPriceCents)};{" "}
-                        {sk.soldLast14Days} sold, {sk.stockOnHand} in stock) —{" "}
-                        {sk.reason}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* SIGNED QUOTE METADATA */}
-              <div className="text-xs text-slate-500 bg-slate-50 px-3.5 py-2.5 rounded border border-slate-200 flex flex-wrap justify-between gap-2">
-                <span>
-                  Signed Quote ID:{" "}
-                  <code className="font-mono text-slate-700">
-                    {quote.quoteId}
-                  </code>
-                </span>
-                <span>
-                  HMAC-SHA256 proves server issuance + integrity only (expires{" "}
-                  {new Date(quote.exp * 1000).toLocaleTimeString()}).
-                </span>
-              </div>
-
-              {/* APPROVAL CHECKBOX & PAYPAL BUTTONS */}
-              {!receipt && (
-                <div className="pt-3 border-t border-slate-200 space-y-4">
-                  <label className="flex items-start gap-3 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={approved}
-                      onChange={(e) => {
-                        setApproved(e.target.checked);
-                        setCancelMsg(null);
+                <div className="border-t border-line pt-4">
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const b = "250";
+                        const inst =
+                          "Prioritize earrings. I need to restock for this weekend.";
+                        setBudget(b);
+                        setInstruction(inst);
+                        requestRecommendation({
+                          budgetOverride: b,
+                          instructionOverride: inst,
+                        });
                       }}
-                      className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600"
-                    />
-                    <span className="text-sm font-medium text-slate-800">
-                      I have reviewed this basket. I understand this is the exact
-                      basket PayPal will charge.
-                    </span>
-                  </label>
+                      className="rounded-lg border border-line bg-white px-3 py-2 font-medium text-secondary transition hover:border-evergreen-soft hover:text-evergreen"
+                    >
+                      Scenario A ($250 — Live AI)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const b = "150";
+                        const inst =
+                          "Prioritize earrings, but I need at least one necklace for the display table.";
+                        setBudget(b);
+                        setInstruction(inst);
+                        requestRecommendation({
+                          budgetOverride: b,
+                          instructionOverride: inst,
+                        });
+                      }}
+                      className="rounded-lg border border-line bg-white px-3 py-2 font-medium text-secondary transition hover:border-evergreen-soft hover:text-evergreen"
+                    >
+                      Scenario B ($150 — Live AI)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBudget("250");
+                        setInstruction(
+                          "Prioritize earrings. I need to restock for this weekend."
+                        );
+                        requestRecommendation({ preset: "preset-a" });
+                      }}
+                      className="rounded-lg border border-line bg-white px-3 py-2 font-medium text-secondary transition hover:border-evergreen-soft hover:text-evergreen"
+                    >
+                      Sample Preset A (Non-AI)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBudget("150");
+                        setInstruction(
+                          "Prioritize earrings, but I need at least one necklace for the display table."
+                        );
+                        requestRecommendation({ preset: "preset-b" });
+                      }}
+                      className="rounded-lg border border-line bg-white px-3 py-2 font-medium text-secondary transition hover:border-evergreen-soft hover:text-evergreen"
+                    >
+                      Sample Preset B (Non-AI)
+                    </button>
+                  </div>
+                  <p className="mt-3 text-[11px] leading-relaxed text-muted">
+                    1 pack = 6 units. Max 2 packs per SKU. Prices come exclusively from the server catalog.
+                  </p>
+                </div>
+              </div>
 
-                  {cancelMsg && (
-                    <div className="text-xs bg-amber-50 border border-amber-200 text-amber-900 px-3 py-2 rounded">
-                      {cancelMsg}
+              {/* RIGHT COLUMN: 02 + 03 */}
+              <div className="min-w-0">
+                {/* 02 · BASKET */}
+                <div className="space-y-5 p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-[11px] font-semibold tracking-[0.16em] text-secondary">
+                      <span className="text-champagne">02</span>
+                      <span className="mx-2 text-line">·</span>YOUR BASKET
+                    </p>
+                    {basket && (
+                      <span
+                        className={`rounded-full border px-3 py-1 text-[11px] font-semibold ${
+                          basket.source === "ai"
+                            ? "border-success/30 bg-success-bg text-success"
+                            : "border-warning/30 bg-warning-bg text-warning"
+                        }`}
+                      >
+                        {basket.sourceBadge}
+                      </span>
+                    )}
+                  </div>
+
+                  {basket ? (
+                    <div className="flex items-center gap-2.5 rounded-xl border border-success/25 bg-success-bg px-4 py-3 text-success">
+                      <ShieldCheck size={19} strokeWidth={1.8} className="shrink-0" />
+                      <p className="text-[13px] font-semibold">
+                        Basket validated — Prices, pack quantities, and budget checked. PASSED
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2.5 rounded-xl border border-line bg-surface-muted px-4 py-3 text-secondary">
+                      <ShieldCheck size={19} strokeWidth={1.8} className="shrink-0" />
+                      <p className="text-[13px] font-medium">Awaiting validation.</p>
                     </div>
                   )}
 
-                  {approved && (
-                    <div className="max-w-md space-y-2">
-                      <p className="text-xs font-semibold uppercase text-slate-500">
-                        Sandbox checkout (not production) — Exact total:{" "}
-                        {formatMoney(basket.totalCents)}
+                  {basket && quote ? (
+                    <>
+                      {resetNotice && (
+                        <div className="rounded-xl border border-line bg-porcelain px-4 py-2.5 text-xs font-medium text-evergreen">
+                          New basket, new signature. Approval resets.
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h2 className="text-base font-semibold text-evergreen">
+                          Validated basket ({basket.totalUnits} units,{" "}
+                          {basket.selected.length} SKUs)
+                        </h2>
+                        {basket.repaired && basket.repairNote && (
+                          <span className="rounded-full border border-warning/30 bg-warning-bg px-2.5 py-1 text-[11px] font-semibold text-warning">
+                            {basket.repairNote}
+                          </span>
+                        )}
+                      </div>
+                      <p className="-mt-3 text-[11px] text-muted">
+                        Wholesale price, tax &amp; shipping excluded for demo clarity.
                       </p>
-                      <PayPalButtons
-                        style={{ layout: "vertical" }}
-                        createOrder={async () => {
-                          setErrorMsg(null);
-                          setCancelMsg(null);
-                          const res = await fetch("/api/paypal/create-order", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ token }),
-                          });
-                          const data = await res.json();
-                          if (!res.ok || !data.orderID) {
-                            throw new Error(
-                              data.error || "Failed to create PayPal order"
-                            );
-                          }
-                          return data.orderID as string;
-                        }}
-                        onApprove={async (data) => {
-                          try {
-                            const res = await fetch(
-                              "/api/paypal/capture-order",
-                              {
+
+                      {/* BUDGET SUMMARY */}
+                      <div className="rounded-2xl border border-line bg-porcelain/60 p-4">
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">TOTAL BUDGET</p>
+                            <p className="mt-1 text-base font-bold tabular-nums text-evergreen">{formatMoney(basket.budgetCents)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">VALIDATED PURCHASE</p>
+                            <p className="mt-1 text-base font-bold tabular-nums text-evergreen">{formatMoney(basket.totalCents)}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">REMAINING</p>
+                            <p className="mt-1 text-base font-bold tabular-nums text-evergreen">{formatMoney(basket.remainingCents)}</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 h-0.5 w-full overflow-hidden rounded-full bg-line">
+                          <div
+                            className="h-full bg-evergreen transition-all duration-200"
+                            style={{ width: `${Math.min(100, basket.budgetUsedPct)}%` }}
+                          />
+                        </div>
+                        <p className="mt-2 text-[11px] tabular-nums text-secondary">
+                          {formatMoney(basket.totalCents)} / {formatMoney(basket.budgetCents)} — {basket.budgetUsedPct}% used, {formatMoney(basket.remainingCents)} left · Earring pack share: {basket.earringPackSharePct}% ({basket.totalPacks} total packs)
+                        </p>
+                      </div>
+
+                      {/* PRODUCT LIST */}
+                      <ul className="divide-y divide-line">
+                        {basket.selected.map((line) => (
+                          <li key={line.skuId} className="flex gap-4 py-4">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-[11px] font-bold tracking-wide text-evergreen">
+                              {line.skuId}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium leading-snug text-ink">{line.name}</p>
+                              <p className="mt-0.5 text-xs leading-relaxed text-secondary">{line.reason}</p>
+                              <p className="mt-1 text-[11px] tabular-nums text-muted">
+                                {line.skuId} · {line.category} · {line.soldLast14Days} sold / {line.stockOnHand} in stock · {line.packs} {line.packs === 1 ? "pack" : "packs"} ({line.units} units @ {formatMoney(line.unitPriceCents)})
+                              </p>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <p className="text-sm font-bold tabular-nums text-evergreen">{formatMoney(line.lineTotalCents)}</p>
+                              <p className="mt-0.5 text-[11px] tabular-nums text-muted">pack {formatMoney(line.packPriceCents)}</p>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* SKIPPED SECTION (ALWAYS RENDERED, NOT COLLAPSIBLE) */}
+                      {basket.skipped.length > 0 && (
+                        <div className="rounded-2xl bg-surface-muted/70 p-4">
+                          <h3 className="mb-2 text-[11px] font-semibold tracking-[0.12em] text-secondary">
+                            CONSIDERED &amp; SKIPPED (TRADEOFF LOG)
+                          </h3>
+                          <ul className="space-y-1.5 text-xs leading-relaxed text-secondary">
+                            {basket.skipped.map((sk) => (
+                              <li key={sk.skuId}>
+                                <span className="font-semibold text-ink">
+                                  {sk.skuId} {sk.name}
+                                </span>{" "}
+                                (1 pack = {formatMoney(sk.packPriceCents)};{" "}
+                                {sk.soldLast14Days} sold, {sk.stockOnHand} in stock) —{" "}
+                                {sk.reason}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* SIGNED QUOTE METADATA */}
+                      <div className="flex flex-wrap justify-between gap-2 rounded-xl border border-line bg-white px-4 py-2.5 text-[11px] text-muted">
+                        <span>
+                          Signed Quote ID:{" "}
+                          <code className="font-mono text-secondary">{quote.quoteId}</code>
+                        </span>
+                        <span>
+                          HMAC-SHA256 proves server issuance + integrity only (expires{" "}
+                          {new Date(quote.exp * 1000).toLocaleTimeString()}).
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="py-6 text-center text-sm text-muted">
+                      Your validated basket will appear here.
+                    </p>
+                  )}
+                </div>
+
+                {/* 03 · REVIEW & APPROVE */}
+                <div className="space-y-4 border-t border-line p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-[11px] font-semibold tracking-[0.16em] text-secondary">
+                      <span className="text-champagne">03</span>
+                      <span className="mx-2 text-line">·</span>REVIEW &amp; APPROVE
+                    </p>
+                    {basket ? (
+                      <span className="rounded-full border border-success/30 bg-success-bg px-3 py-1 text-[11px] font-semibold text-success">
+                        Validated
+                      </span>
+                    ) : (
+                      <span className="rounded-full border border-line bg-surface-muted px-3 py-1 text-[11px] font-semibold text-secondary">
+                        Awaiting validation
+                      </span>
+                    )}
+                  </div>
+
+                  {basket && !receipt && (
+                    <>
+                      <p className="text-[13px] text-secondary">
+                        Validated basket confirmed. Review the exact purchase total before payment.
+                      </p>
+                      <div className="flex items-baseline justify-between rounded-2xl border border-line bg-porcelain/60 px-4 py-3">
+                        <span className="text-[11px] font-semibold tracking-[0.12em] text-muted">EXACT TOTAL</span>
+                        <span className="text-xl font-bold tabular-nums text-evergreen">{formatMoney(basket.totalCents)}</span>
+                      </div>
+
+                      <label className="flex cursor-pointer select-none items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={approved}
+                          onChange={(e) => {
+                            setApproved(e.target.checked);
+                            setCancelMsg(null);
+                          }}
+                          className="mt-0.5 h-5 w-5 shrink-0 rounded border-line accent-[#172B2B]"
+                        />
+                        <span className="text-sm font-medium text-ink">
+                          I have reviewed this basket. I understand this is the exact
+                          basket PayPal will charge.
+                        </span>
+                      </label>
+
+                      {cancelMsg && (
+                        <div className="rounded-xl border border-warning/30 bg-warning-bg px-4 py-2.5 text-xs text-warning">
+                          {cancelMsg}
+                        </div>
+                      )}
+
+                      {approved && (
+                        <div className="max-w-md space-y-2">
+                          <p className="text-[11px] font-semibold tracking-[0.12em] text-muted">
+                            Sandbox checkout (not production) — Exact total:{" "}
+                            {formatMoney(basket.totalCents)}
+                          </p>
+                          <PayPalButtons
+                            style={{ layout: "vertical" }}
+                            createOrder={async () => {
+                              setErrorMsg(null);
+                              setCancelMsg(null);
+                              const res = await fetch("/api/paypal/create-order", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                  orderID: data.orderID,
-                                  token,
-                                }),
+                                body: JSON.stringify({ token }),
+                              });
+                              const data = await res.json();
+                              if (!res.ok || !data.orderID) {
+                                throw new Error(
+                                  data.error || "Failed to create PayPal order"
+                                );
                               }
-                            );
-                            const out = await res.json();
-                            if (!res.ok || !out.receipt) {
-                              throw new Error(
-                                out.error || "Failed to capture PayPal order"
+                              return data.orderID as string;
+                            }}
+                            onApprove={async (data) => {
+                              try {
+                                const res = await fetch(
+                                  "/api/paypal/capture-order",
+                                  {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                      orderID: data.orderID,
+                                      token,
+                                    }),
+                                  }
+                                );
+                                const out = await res.json();
+                                if (!res.ok || !out.receipt) {
+                                  throw new Error(
+                                    out.error || "Failed to capture PayPal order"
+                                  );
+                                }
+                                setReceipt(out.receipt as CaptureReceipt);
+                              } catch (err: any) {
+                                setErrorMsg(
+                                  err?.message ||
+                                    "Payment capture failed. Please try again."
+                                );
+                              }
+                            }}
+                            onCancel={() => {
+                              setCancelMsg(
+                                "Payment cancelled — your basket is unchanged."
                               );
-                            }
-                            setReceipt(out.receipt as CaptureReceipt);
-                          } catch (err: any) {
-                            setErrorMsg(
-                              err?.message ||
-                                "Payment capture failed. Please try again."
-                            );
-                          }
-                        }}
-                        onCancel={() => {
-                          setCancelMsg(
-                            "Payment cancelled — your basket is unchanged."
-                          );
-                        }}
-                        onError={(err) => {
-                          setErrorMsg(
-                            `PayPal checkout error: ${
-                              err?.message || "Could not complete sandbox payment."
-                            }`
-                          );
-                        }}
-                      />
-                    </div>
+                            }}
+                            onError={(err) => {
+                              setErrorMsg(
+                                `PayPal checkout error: ${
+                                  err?.message || "Could not complete sandbox payment."
+                                }`
+                              );
+                            }}
+                          />
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
-              )}
-            </section>
-          )}
+              </div>
+            </div>
+          </section>
 
-          {/* SECTION 3: THE COMPLETED RECEIPT */}
+          {/* COMPLETED RECEIPT */}
           {receipt && (
-            <section className="bg-emerald-50 border-2 border-emerald-500 rounded-xl p-6 space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-emerald-950">
-                  3. Sandbox Payment Completed — Verified Receipt
+            <section className="space-y-3 rounded-[20px] border border-success/40 bg-success-bg p-6">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-evergreen">
+                  <CheckCircle2 size={20} strokeWidth={1.8} className="text-success" />
+                  Sandbox Payment Completed — Verified Receipt
                 </h2>
-                <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold uppercase">
+                <span className="rounded-full bg-success px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
                   Status: {receipt.status}
                 </span>
               </div>
-              <p className="text-xs text-emerald-900">
+              <p className="text-xs text-success">
                 Sandbox checkout (not production) — Real PayPal Orders v2 sandbox capture verified against signed quote.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm bg-white p-4 rounded-lg border border-emerald-200">
+              <div className="grid grid-cols-1 gap-3 rounded-2xl border border-success/25 bg-white p-4 text-sm md:grid-cols-3">
                 <div>
-                  <span className="text-xs text-slate-500 block">
-                    PayPal Capture ID
-                  </span>
-                  <span className="font-mono font-bold text-slate-900">
-                    {receipt.captureId}
-                  </span>
+                  <span className="block text-[11px] text-muted">PayPal Capture ID</span>
+                  <span className="font-mono font-bold tabular-nums text-ink">{receipt.captureId}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-500 block">
-                    PayPal Order ID
-                  </span>
-                  <span className="font-mono font-semibold text-slate-800">
-                    {receipt.orderId}
-                  </span>
+                  <span className="block text-[11px] text-muted">PayPal Order ID</span>
+                  <span className="font-mono font-semibold tabular-nums text-ink">{receipt.orderId}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-500 block">
-                    Amount Captured
-                  </span>
-                  <span className="font-bold text-emerald-700">
+                  <span className="block text-[11px] text-muted">Amount Captured</span>
+                  <span className="font-bold tabular-nums text-success">
                     ${receipt.amountValue} {receipt.currencyCode}
                   </span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-500 block">Payer</span>
-                  <span className="font-medium text-slate-800">
+                  <span className="block text-[11px] text-muted">Payer</span>
+                  <span className="font-medium text-ink">
                     {receipt.payerName} ({receipt.payerEmail})
                   </span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-500 block">
-                    Timestamp
-                  </span>
-                  <span className="font-mono text-xs text-slate-700">
-                    {receipt.capturedAt}
-                  </span>
+                  <span className="block text-[11px] text-muted">Timestamp</span>
+                  <span className="font-mono text-xs tabular-nums text-secondary">{receipt.capturedAt}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-500 block">
-                    Basket Summary
-                  </span>
-                  <span className="font-semibold text-slate-900">
+                  <span className="block text-[11px] text-muted">Basket Summary</span>
+                  <span className="font-semibold tabular-nums text-ink">
                     {receipt.totalUnits} units, {receipt.skuCount} SKUs —{" "}
                     {receipt.merchantName}
                   </span>
@@ -556,8 +601,8 @@ export default function RestockRescuePage() {
           )}
         </main>
 
-        <footer className="bg-slate-900 text-slate-400 text-xs py-4 px-6 border-t border-slate-800">
-          <div className="max-w-5xl mx-auto flex flex-wrap justify-between gap-2">
+        <footer className="bg-evergreen px-5 py-4 text-[11px] text-porcelain/60 md:px-12">
+          <div className="mx-auto flex w-full max-w-[1280px] flex-wrap justify-between gap-2">
             <span>
               All catalog, sales, and stock data are synthetic and for demo only.
             </span>

@@ -3,21 +3,35 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-evergreen: #172b2b;
+  --color-evergreen-soft: #294b3d;
+  --color-champagne: #c6a878;
+  --color-background: #f4f0e8;
+  --color-surface: #ffffff;
+  --color-surface-muted: #ede8de;
+  --color-text: #24332f;
+  --color-text-secondary: #738078;
+  --color-border: #e6e1d7;
+  --color-success: #24543a;
+  --color-success-bg: #dce8df;
+  --color-warning: #765a27;
+  --color-warning-bg: #f3e9d5;
+  --color-error: #873f39;
+  --color-error-bg: #f3dfdc;
+  --radius-card: 20px;
+  --radius-control: 12px;
+  --radius-button: 12px;
+  --page-max-width: 1280px;
+  --workspace-gap: 24px;
+  --font-display: "Instrument Serif", serif;
+  --font-ui: "Manrope", sans-serif;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-text);
+  background: var(--color-background);
+  font-family: var(--font-ui), Manrope, ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 @layer utilities {
