@@ -96,6 +96,31 @@ function buildUserPrompt(
   });
 }
 
+// 30s: matches the recording runbook rule ("generation over ~30s -> abandon
+// the take"); a hung Gemini call fails fast into retry/fallback instead of
+// hanging until the platform limit.
+const GEMINI_TIMEOUT_MS = 30_000;
+
+function describeAiError(err: unknown): string {
+  const e = err as {
+    name?: unknown;
+    message?: unknown;
+    status?: unknown;
+    code?: unknown;
+    response?: { status?: unknown };
+  } | null;
+  const name = typeof e?.name === "string" ? e.name : "Error";
+  const status = e?.status ?? e?.response?.status ?? e?.code;
+  const message =
+    typeof e?.message === "string" ? e.message.slice(0, 300) : String(err).slice(0, 300);
+  return `name=${name}${status !== undefined ? ` status=${String(status)}` : ""} message=${message}`;
+}
+
+function logAiFailure(label: string, err: unknown): void {
+  // Error messages / validation codes only — never the API key or prompt.
+  console.error(`[restock-ai] ${label}: ${describeAiError(err)}`);
+}
+
 async function callGeminiOnce(
   budgetDollars: number,
   instruction: string,
@@ -116,12 +141,86 @@ async function callGeminiOnce(
       responseMimeType: "application/json",
       responseSchema: GEMINI_RESPONSE_SCHEMA,
       thinkingConfig: { thinkingBudget: 256 },
+      abortSignal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
     },
   });
 
   const text = response.text;
   if (!text) throw new Error("Empty response from Gemini");
   return JSON.parse(text);
+}
+
+interface ProposalAttempt {
+  basket: ValidatedBasket | null;
+  /** Why validate+repair rejected the proposal (null when basket is set). */
+  failure: string | null;
+  /** True only when a proposal existed but validate AND repair both failed. */
+  irreparable: boolean;
+}
+
+function attemptProposal(
+  rawJson: unknown,
+  budgetDollars: number,
+  constraints: ReturnType<typeof parseConstraints>
+): ProposalAttempt {
+  if (!rawJson || typeof rawJson !== "object") {
+    return { basket: null, failure: null, irreparable: false };
+  }
+  const parsed = AiBasketZodSchema.safeParse(rawJson);
+  const candidateSelected = parsed.success
+    ? parsed.data.selected
+    : Array.isArray((rawJson as any).selected)
+    ? (rawJson as any).selected
+    : null;
+  const candidateSkipped = parsed.success
+    ? parsed.data.skipped
+    : Array.isArray((rawJson as any).skipped)
+    ? (rawJson as any).skipped
+    : [];
+
+  if (!candidateSelected) {
+    return { basket: null, failure: null, irreparable: false };
+  }
+
+  let validationError: unknown = null;
+  // 1. Direct validation pass
+  try {
+    return {
+      basket: validateBasket(
+        candidateSelected,
+        candidateSkipped,
+        budgetDollars,
+        constraints,
+        { source: "ai", repaired: false }
+      ),
+      failure: null,
+      irreparable: false,
+    };
+  } catch (err) {
+    validationError = err;
+    logAiFailure("validate_failed", err);
+  }
+
+  // 2. Single deterministic repair attempt
+  try {
+    return {
+      basket: repairBasket(
+        candidateSelected,
+        candidateSkipped,
+        budgetDollars,
+        constraints
+      ),
+      failure: null,
+      irreparable: false,
+    };
+  } catch (err) {
+    logAiFailure("repair_failed", err);
+    return {
+      basket: null,
+      failure: `validation: ${describeAiError(validationError)}; repair: ${describeAiError(err)}`,
+      irreparable: true,
+    };
+  }
 }
 
 export async function generateValidatedRecommendation(
@@ -133,57 +232,44 @@ export async function generateValidatedRecommendation(
   let rawJson: unknown = null;
   try {
     rawJson = await callGeminiOnce(budgetDollars, instruction);
-  } catch {
+  } catch (err) {
+    logAiFailure("ai_call_1_failed", err);
     try {
       rawJson = await callGeminiOnce(
         budgetDollars,
         instruction,
         "Return ONLY JSON, no markdown."
       );
-    } catch {
+    } catch (retryErr) {
+      logAiFailure("ai_call_2_retry_failed", retryErr);
       rawJson = null;
     }
   }
 
-  if (rawJson && typeof rawJson === "object") {
-    const parsed = AiBasketZodSchema.safeParse(rawJson);
-    const candidateSelected = parsed.success
-      ? parsed.data.selected
-      : Array.isArray((rawJson as any).selected)
-      ? (rawJson as any).selected
-      : null;
-    const candidateSkipped = parsed.success
-      ? parsed.data.skipped
-      : Array.isArray((rawJson as any).skipped)
-      ? (rawJson as any).skipped
-      : [];
+  const attempt = attemptProposal(rawJson, budgetDollars, constraints);
+  if (attempt.basket) return attempt.basket;
 
-    if (candidateSelected) {
-      // 1. Direct validation pass
-      try {
-        return validateBasket(
-          candidateSelected,
-          candidateSkipped,
-          budgetDollars,
-          constraints,
-          { source: "ai", repaired: false }
-        );
-      } catch {
-        // 2. Single deterministic repair attempt
-        try {
-          return repairBasket(
-            candidateSelected,
-            candidateSkipped,
-            budgetDollars,
-            constraints
-          );
-        } catch {
-          // Fall through to deterministic fallback
-        }
-      }
+  // 3. Irreparable branch only: ONE fresh Gemini sample told WHY the previous
+  // proposal failed, then through the same validate -> repair chain.
+  // Total Gemini calls per request stays <= 3.
+  if (attempt.irreparable) {
+    try {
+      const retryJson = await callGeminiOnce(
+        budgetDollars,
+        instruction,
+        `Your previous basket was rejected by the server validator (${attempt.failure}). Return a NEW JSON basket that fixes this: use ONLY catalog SKUs, 3-6 distinct SKUs, packs integer 1 or 2, include the required category if the instruction names one, keep at least 60% of packs as earrings when asked to prioritize earrings, and prefer cheaper lines to stay under budget. Return ONLY JSON, no markdown.`
+      );
+      const retryAttempt = attemptProposal(
+        retryJson,
+        budgetDollars,
+        constraints
+      );
+      if (retryAttempt.basket) return retryAttempt.basket;
+    } catch (err) {
+      logAiFailure("ai_call_3_irreparable_retry_failed", err);
     }
   }
 
-  // 3. Explicit deterministic fallback (must also pass validateBasket)
+  // 4. Explicit deterministic fallback (must also pass validateBasket)
   return buildFallbackBasket(budgetDollars, constraints);
 }
