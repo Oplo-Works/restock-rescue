@@ -103,7 +103,7 @@ export default function RestockRescuePage() {
         components: "buttons",
       }}
     >
-      <div className="min-h-screen bg-porcelain font-sans text-ink flex flex-col justify-between">
+      <div className="min-h-screen overflow-x-clip bg-porcelain font-sans text-ink flex flex-col justify-between">
         <header className="bg-evergreen text-porcelain">
           <div className="mx-auto flex w-full max-w-[1280px] flex-wrap items-center justify-between gap-3 px-5 py-4 md:px-12">
             <div>
@@ -159,7 +159,7 @@ export default function RestockRescuePage() {
           <section className="overflow-hidden rounded-[20px] border border-line bg-white shadow-card">
             <div className="grid lg:grid-cols-[34%_minmax(0,1fr)]">
               {/* 01 · BUYING PLAN */}
-              <div className="space-y-5 p-6 lg:border-r lg:border-line">
+              <div className="min-w-0 space-y-5 p-5 sm:p-6 lg:border-r lg:border-line">
                 <p className="text-[11px] font-semibold tracking-[0.16em] text-secondary">
                   <span className="text-champagne">01</span>
                   <span className="mx-2 text-line">·</span>YOUR BUYING PLAN
@@ -281,7 +281,7 @@ export default function RestockRescuePage() {
               {/* RIGHT COLUMN: 02 + 03 */}
               <div className="min-w-0">
                 {/* 02 · BASKET */}
-                <div className="space-y-5 p-6">
+                <div className="space-y-5 p-5 sm:p-6">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-[11px] font-semibold tracking-[0.16em] text-secondary">
                       <span className="text-champagne">02</span>
@@ -339,18 +339,18 @@ export default function RestockRescuePage() {
 
                       {/* BUDGET SUMMARY */}
                       <div className="rounded-2xl border border-line bg-porcelain/60 p-4">
-                        <div className="grid grid-cols-3 gap-3">
-                          <div>
-                            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">TOTAL BUDGET</p>
-                            <p className="mt-1 text-base font-bold tabular-nums text-evergreen">{formatMoney(basket.budgetCents)}</p>
+                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                          <div className="min-w-0">
+                            <p className="text-[9px] font-semibold tracking-[0.1em] text-muted sm:text-[10px] sm:tracking-[0.12em]">TOTAL BUDGET</p>
+                            <p className="mt-1 text-sm font-bold tabular-nums text-evergreen sm:text-base">{formatMoney(basket.budgetCents)}</p>
                           </div>
-                          <div>
-                            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">VALIDATED PURCHASE</p>
-                            <p className="mt-1 text-base font-bold tabular-nums text-evergreen">{formatMoney(basket.totalCents)}</p>
+                          <div className="min-w-0">
+                            <p className="text-[9px] font-semibold tracking-[0.1em] text-muted sm:text-[10px] sm:tracking-[0.12em]">VALIDATED PURCHASE</p>
+                            <p className="mt-1 text-sm font-bold tabular-nums text-evergreen sm:text-base">{formatMoney(basket.totalCents)}</p>
                           </div>
-                          <div className="text-right">
-                            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">REMAINING</p>
-                            <p className="mt-1 text-base font-bold tabular-nums text-evergreen">{formatMoney(basket.remainingCents)}</p>
+                          <div className="min-w-0 text-right">
+                            <p className="text-[9px] font-semibold tracking-[0.1em] text-muted sm:text-[10px] sm:tracking-[0.12em]">REMAINING</p>
+                            <p className="mt-1 text-sm font-bold tabular-nums text-evergreen sm:text-base">{formatMoney(basket.remainingCents)}</p>
                           </div>
                         </div>
                         <div className="mt-3 h-0.5 w-full overflow-hidden rounded-full bg-line">
@@ -427,7 +427,7 @@ export default function RestockRescuePage() {
                 </div>
 
                 {/* 03 · REVIEW & APPROVE */}
-                <div className="space-y-4 border-t border-line p-6">
+                <div className="space-y-4 border-t border-line p-5 sm:p-6">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-[11px] font-semibold tracking-[0.16em] text-secondary">
                       <span className="text-champagne">03</span>
