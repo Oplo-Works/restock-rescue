@@ -1,22 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-
-const { generateContentMock } = vi.hoisted(() => ({
-  generateContentMock: vi.fn(),
-}));
-
-vi.mock("@google/genai", () => ({
-  GoogleGenAI: class {
-    models = { generateContent: generateContentMock };
-  },
-  Type: {
-    OBJECT: "OBJECT",
-    ARRAY: "ARRAY",
-    STRING: "STRING",
-    INTEGER: "INTEGER",
-  },
-  Schema: class {},
-}));
-
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { generateValidatedRecommendation } from "../lib/ai";
 
 const IRREPARABLE = {
@@ -40,27 +22,46 @@ const VALID = {
   skipped: [],
 };
 
-describe("ai.ts irreparable-branch retry (mocked Gemini)", () => {
+function chatResponse(payload: unknown) {
+  return {
+    ok: true,
+    status: 200,
+    json: async () => ({
+      choices: [{ message: { content: JSON.stringify(payload) } }],
+    }),
+  };
+}
+
+const fetchMock = vi.fn();
+
+describe("ai.ts irreparable-branch retry (mocked Meta Model API)", () => {
   beforeEach(() => {
-    generateContentMock.mockReset();
-    process.env.GEMINI_API_KEY = "test-key-not-real";
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
+    process.env.MODEL_API_KEY = "test-key-not-real";
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  it("makes one fresh Gemini call with the failure reason after validate+repair fail, then validates the new proposal", async () => {
-    generateContentMock
-      .mockResolvedValueOnce({ text: JSON.stringify(IRREPARABLE) })
-      .mockResolvedValueOnce({ text: JSON.stringify(VALID) });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("makes one fresh AI call with the failure reason after validate+repair fail, then validates the new proposal", async () => {
+    fetchMock
+      .mockResolvedValueOnce(chatResponse(IRREPARABLE))
+      .mockResolvedValueOnce(chatResponse(VALID));
 
     const basket = await generateValidatedRecommendation(
       150,
       "Prioritize earrings, but I need at least one necklace for the display table."
     );
 
-    expect(generateContentMock).toHaveBeenCalledTimes(2);
-    const retryContents = String(
-      generateContentMock.mock.calls[1][0].contents
-    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const firstBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(firstBody.model).toBe("muse-spark-1.3");
+    expect(firstBody.temperature).toBeUndefined();
+    const retryBody = JSON.parse(fetchMock.mock.calls[1][1].body);
+    const retryContents = String(retryBody.messages[1].content);
     expect(retryContents).toContain("earring_share_too_low");
     expect(basket.source).toBe("ai");
     expect(basket.totalCents).toBe(13980);
@@ -71,8 +72,8 @@ describe("ai.ts irreparable-branch retry (mocked Gemini)", () => {
     expect(logged).toContain("repair_failed");
   });
 
-  it("falls back (labeled) when both Gemini calls throw", async () => {
-    generateContentMock.mockRejectedValue(new Error("503 unavailable"));
+  it("falls back (labeled) when both AI calls throw", async () => {
+    fetchMock.mockRejectedValue(new Error("503 unavailable"));
 
     const basket = await generateValidatedRecommendation(
       250,

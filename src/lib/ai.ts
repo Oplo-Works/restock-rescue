@@ -1,4 +1,3 @@
-import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { z } from "zod";
 import { CATALOG_ITEMS, parseConstraints } from "./data";
 import {
@@ -41,28 +40,31 @@ export const AiBasketZodSchema = z.object({
     .max(3),
 });
 
-const GEMINI_RESPONSE_SCHEMA: Schema = {
-  type: Type.OBJECT,
+// Plain JSON Schema for Meta Model API structured output
+// (response_format: { type: "json_schema" }) — same basket shape the
+// validator expects from the previous provider.
+const BASKET_JSON_SCHEMA = {
+  type: "object",
   properties: {
     selected: {
-      type: Type.ARRAY,
+      type: "array",
       items: {
-        type: Type.OBJECT,
+        type: "object",
         properties: {
-          skuId: { type: Type.STRING },
-          packs: { type: Type.INTEGER },
-          reason: { type: Type.STRING },
+          skuId: { type: "string" },
+          packs: { type: "integer" },
+          reason: { type: "string" },
         },
         required: ["skuId", "packs", "reason"],
       },
     },
     skipped: {
-      type: Type.ARRAY,
+      type: "array",
       items: {
-        type: Type.OBJECT,
+        type: "object",
         properties: {
-          skuId: { type: Type.STRING },
-          reason: { type: Type.STRING },
+          skuId: { type: "string" },
+          reason: { type: "string" },
         },
         required: ["skuId", "reason"],
       },
@@ -97,9 +99,15 @@ function buildUserPrompt(
 }
 
 // 30s: matches the recording runbook rule ("generation over ~30s -> abandon
-// the take"); a hung Gemini call fails fast into retry/fallback instead of
+// the take"); a hung AI call fails fast into retry/fallback instead of
 // hanging until the platform limit.
-const GEMINI_TIMEOUT_MS = 30_000;
+const AI_TIMEOUT_MS = 30_000;
+
+// Meta Model API (OpenAI-compatible Chat Completions). Model fixed by
+// product decision; endpoint/auth per https://dev.meta.ai/docs —
+// POST https://api.meta.ai/v1/chat/completions, Bearer MODEL_API_KEY.
+const META_MODEL_API_URL = "https://api.meta.ai/v1/chat/completions";
+const META_MODEL = "muse-spark-1.3";
 
 function describeAiError(err: unknown): string {
   const e = err as {
@@ -121,32 +129,62 @@ function logAiFailure(label: string, err: unknown): void {
   console.error(`[restock-ai] ${label}: ${describeAiError(err)}`);
 }
 
-async function callGeminiOnce(
+async function callModelOnce(
   budgetDollars: number,
   instruction: string,
   retryHint?: string
 ): Promise<unknown> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.MODEL_API_KEY;
   if (!apiKey) {
-    throw new Error("Missing GEMINI_API_KEY");
+    throw new Error("Missing MODEL_API_KEY");
   }
-  const ai = new GoogleGenAI({ apiKey });
-  const modelName = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
-  const response = await ai.models.generateContent({
-    model: modelName,
-    contents: buildUserPrompt(budgetDollars, instruction, retryHint),
-    config: {
-      systemInstruction: SYSTEM_PROMPT,
-      responseMimeType: "application/json",
-      responseSchema: GEMINI_RESPONSE_SCHEMA,
-      thinkingConfig: { thinkingBudget: 256 },
-      abortSignal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
+  const res = await fetch(META_MODEL_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      model: META_MODEL,
+      messages: [
+        { role: "developer", content: SYSTEM_PROMPT },
+        {
+          role: "user",
+          content: buildUserPrompt(budgetDollars, instruction, retryHint),
+        },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: { name: "RestockBasket", schema: BASKET_JSON_SCHEMA },
+      },
+    }),
+    signal: AbortSignal.timeout(AI_TIMEOUT_MS),
+    cache: "no-store",
   });
 
-  const text = response.text;
-  if (!text) throw new Error("Empty response from Gemini");
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const errBody = (await res.json()) as {
+        error?: { message?: string; code?: string; type?: string };
+      };
+      detail = errBody?.error?.message || errBody?.error?.code || "";
+    } catch {
+      // Non-JSON error body — status alone is enough for the failure log.
+    }
+    const err = new Error(
+      `Meta Model API request failed (${res.status})${detail ? `: ${detail}` : ""}`
+    ) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error("Empty response from Meta Model API");
   return JSON.parse(text);
 }
 
@@ -231,11 +269,11 @@ export async function generateValidatedRecommendation(
 
   let rawJson: unknown = null;
   try {
-    rawJson = await callGeminiOnce(budgetDollars, instruction);
+    rawJson = await callModelOnce(budgetDollars, instruction);
   } catch (err) {
     logAiFailure("ai_call_1_failed", err);
     try {
-      rawJson = await callGeminiOnce(
+      rawJson = await callModelOnce(
         budgetDollars,
         instruction,
         "Return ONLY JSON, no markdown."
@@ -249,12 +287,12 @@ export async function generateValidatedRecommendation(
   const attempt = attemptProposal(rawJson, budgetDollars, constraints);
   if (attempt.basket) return attempt.basket;
 
-  // 3. Irreparable branch only: ONE fresh Gemini sample told WHY the previous
+  // 3. Irreparable branch only: ONE fresh AI sample told WHY the previous
   // proposal failed, then through the same validate -> repair chain.
-  // Total Gemini calls per request stays <= 3.
+  // Total AI calls per request stays <= 3.
   if (attempt.irreparable) {
     try {
-      const retryJson = await callGeminiOnce(
+      const retryJson = await callModelOnce(
         budgetDollars,
         instruction,
         `Your previous basket was rejected by the server validator (${attempt.failure}). Return a NEW JSON basket that fixes this: use ONLY catalog SKUs, 3-6 distinct SKUs, packs integer 1 or 2, include the required category if the instruction names one, keep at least 60% of packs as earrings when asked to prioritize earrings, and prefer cheaper lines to stay under budget. Return ONLY JSON, no markdown.`
