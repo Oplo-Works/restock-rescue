@@ -147,6 +147,10 @@ async function callModelOnce(
     },
     body: JSON.stringify({
       model: META_MODEL,
+      // Spark reasons by default at "high", which blows the 30s timeout on
+      // the full catalog prompt; "minimal" matches the previous provider's
+      // small thinking budget. The server validator remains the safety net.
+      reasoning_effort: "minimal",
       messages: [
         { role: "developer", content: SYSTEM_PROMPT },
         {

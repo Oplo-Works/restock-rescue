@@ -60,6 +60,7 @@ describe("ai.ts irreparable-branch retry (mocked Meta Model API)", () => {
     const firstBody = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(firstBody.model).toBe("muse-spark-1.3");
     expect(firstBody.temperature).toBeUndefined();
+    expect(firstBody.reasoning_effort).toBe("minimal");
     const retryBody = JSON.parse(fetchMock.mock.calls[1][1].body);
     const retryContents = String(retryBody.messages[1].content);
     expect(retryContents).toContain("earring_share_too_low");
